@@ -56,7 +56,7 @@ def main():
         'ecdsa-sha2-nistp256',
         'rsa-sha2-256',
         'rsa-sha2-512',
-        'ssh-rsa' # Legacy, should not get anything
+        'ssh-rsa' # Legacy, should throw a warning
     ]
     keys = {}
 
