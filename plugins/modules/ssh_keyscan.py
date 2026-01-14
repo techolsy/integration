@@ -15,7 +15,7 @@ options:
   target_port:
     description:
       - TCP port on which the SSH service is listening.
-    required: true
+    required: false
     type: int
 author:
   - Alexander Olsson (@techolsy)
@@ -24,8 +24,8 @@ author:
 EXAMPLES = r'''
 - name: Scan for server keys
   techolsy.integration.ssh_keyscan:
-    target_host: pihole.local
-    target_port: 22
+    host: pihole.local
+    port: 22
 '''
 
 RETURN = r'''
@@ -40,23 +40,32 @@ from ansible.module_utils.basic import AnsibleModule
 import paramiko
 import socket
 
-def main():
-    parameters = {
-        'target_host': {"required": True, "type": 'str'},
-        'target_port': {"required": True, "type": 'int'}
-    }
+def run_module():
+    module_args = dict(
+        host=dict(type='str', required=True),
+        port=dict(type='int', required=False, default=22)
+    )
 
-    module = AnsibleModule(argument_spec=parameters)
+    result = dict(
+        changed=False,
+        host='',
+        port='',
+        keys=[]
+    )
 
-    target_host = module.params['target_host']
-    target_port = module.params['target_port']
+    module = AnsibleModule(
+        argument_spec=module_args,
+        supports_check_mode=False
+    )
+
+    target_host = module.params['host']
+    target_port = module.params['port']
 
     key_types = [
         'ssh-ed25519',
         'ecdsa-sha2-nistp256',
         'rsa-sha2-256',
         'rsa-sha2-512',
-        'ssh-rsa' # Legacy, should throw a warning
     ]
     keys = {}
 
@@ -74,13 +83,14 @@ def main():
             module.warn(f'{key_type} failed: {e}')
             continue
 
-    output = {
-        'target_host': target_host,
-        'target_port': target_port,
-        'keys': keys
-    }
+    result['host'] = module.params['host']
+    result['port'] = module.params['port']
+    result['keys'] = keys
 
-    module.exit_json(changed=False, **output)
+    module.exit_json(**result)
+
+def main():
+    run_module()
 
 if __name__ == '__main__':
     main()
