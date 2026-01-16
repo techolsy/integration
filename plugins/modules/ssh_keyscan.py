@@ -7,12 +7,12 @@ short_description: Scan a Linux server for its SSH host keys
 description:
   - Retrieves the public SSH host keys from a target host and returns them.
 options:
-  target_host:
+  host:
     description:
       - Hostname or IP address of the target machine.
     required: true
     type: str
-  target_port:
+  port:
     description:
       - TCP port on which the SSH service is listening.
     required: false
