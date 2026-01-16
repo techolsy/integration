@@ -4,7 +4,7 @@
 
 ### Changed
 * techolsy.integration.ssh_keyscan
-  * documentation now reflect changed from 0.1.1
+  * documentation now reflect changes from 0.1.1
 
 ## [0.1.1] - 2026-01-14
 
