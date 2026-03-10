@@ -193,7 +193,8 @@ def run_module():
 
     result = dict(
         changed=False,
-        path=None
+        path=None,
+        diff={}
     )
 
     module = AnsibleModule(
@@ -221,7 +222,15 @@ def run_module():
                     os.remove(existing)
                 result['changed'] = True
 
+            current = read_file(desired_path)
+
             if detect_change(desired_path, rules):
+
+                if module._diff:
+                    result['diff'] = {
+                        "before": current or "",
+                        "after": rules
+                    }
 
                 if not module.check_mode:
                     write_file(desired_path, rules)
@@ -232,6 +241,14 @@ def run_module():
         elif state == "absent":
 
             if existing:
+                current = read_file(desired_path)
+
+                if module._diff:
+                    result['diff'] = {
+                        "before": current or "",
+                        "after": ""
+                    }
+
                 if not module.check_mode:
                     remove_file(existing)
                 result['changed'] = True
