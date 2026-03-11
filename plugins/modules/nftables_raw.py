@@ -107,19 +107,17 @@ changed:
 from ansible.module_utils.basic import AnsibleModule
 import os
 import glob
-import subprocess
 import tempfile
 
 BASE_DIR="/etc/ansible/nftables.d"
 MAIN_CONF="/etc/nftables.conf"
-NFT="/usr/sbin/nft"
 
 def ensure_dir():
     os.makedirs(BASE_DIR, exist_ok=True)
 
 def snippet_path(weight, name):
     weight = int(weight)
-    return os.path.join(BASE_DIR, f"{int(weight):03d}-{name}.nft")
+    return os.path.join(BASE_DIR, f"{weight:03d}-{name}.nft")
 
 def find_existing(name):
     pattern = os.path.join(BASE_DIR, f"*-{name}.nft")
@@ -159,24 +157,24 @@ def assemble_rules():
     tmp.close()
     return tmp.name
 
-def validate_rules(tmpfile):
-    cmd = [NFT, "-c", "-f", tmpfile]
+def validate_rules(module, nft, tmpfile):
+    rc, out, err = module.run_command([nft, "-c", "-f", tmpfile])
 
-    proc = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
-
-    _, err = proc.communicate()
-
-    if proc.returncode != 0:
-        return False, err.decode()
+    if rc != 0:
+        return False, err or out
 
     return True, None
 
-def apply_rules(tmpfile):
-    subprocess.check_call([NFT, "-f", tmpfile])
+def apply_rules(module, nft, tmpfile):
+    rc, out, err = module.run_command([nft, "-f", tmpfile])
+
+    if rc != 0:
+        module.fail_json(
+            msg="Failed applying nftables rules",
+            stdout=out,
+            stderr=err,
+            rc=rc
+        )
 
 def detect_change(path, new_content):
     current = read_file(path)
@@ -202,9 +200,11 @@ def run_module():
         supports_check_mode=True
     )
 
+    nft = module.get_bin_path("nft", required=True)
+
     name = module.params['name']
     rules = module.params['rules']
-    weight = int(module.params['weight'])
+    weight = module.params['weight']
     state = module.params['state']
     validate = module.params['validate']
 
@@ -258,7 +258,7 @@ def run_module():
             tmpfile = assemble_rules()
 
             if validate:
-                ok, err = validate_rules(tmpfile)
+                ok, err = validate_rules(module, nft, tmpfile)
 
                 if not ok:
                     os.unlink(tmpfile)
@@ -267,7 +267,7 @@ def run_module():
                         error=err
                     )
 
-            apply_rules(tmpfile)
+            apply_rules(module, nft, tmpfile)
             os.unlink(tmpfile)
 
         module.exit_json(**result)
