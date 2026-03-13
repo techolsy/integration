@@ -23,7 +23,7 @@ author:
 
 EXAMPLES = r'''
 - name: Scan for server keys
-  techolsy.integration.ssh_keyscan:
+  techolsy.exmod.ssh_keyscan:
     host: pihole.local
     port: 22
 '''

@@ -64,7 +64,7 @@ requirements:
 
 EXAMPLES = r'''
 - name: Create base firewall rules
-  techolsy.integration.nftables_raw:
+  techolsy.exmod.nftables_raw:
     name: base
     weight: 10
     rules: |
@@ -79,14 +79,14 @@ EXAMPLES = r'''
       }
 
 - name: Allow SSH
-  techolsy.integration.nftables_raw:
+  techolsy.exmod.nftables_raw:
     name: ssh
     weight: 20
     rules: |
       add rule inet filter input tcp dport 22 accept
 
 - name: Remove old rules
-  techolsy.integration.nftables_raw:
+  techolsy.exmod.nftables_raw:
     name: legacy_rules
     state: absent
 '''

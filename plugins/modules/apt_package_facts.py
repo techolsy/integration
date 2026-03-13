@@ -16,7 +16,7 @@ author:
 
 EXAMPLES = r'''
 - name: Gather APT package facts
-  apt_package_facts:
+  techolsy.exmod.apt_package_facts:
 
 - name: Show nginx package version
   debug:

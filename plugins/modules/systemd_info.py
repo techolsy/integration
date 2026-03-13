@@ -21,7 +21,7 @@ notes:
 
 EXAMPLES = r'''
 - name: Gather systemd units
-  systemd_units_facts:
+  techolsy.exmod.systemd_units_facts:
 
 - name: Check if ssh service exists
   debug:
